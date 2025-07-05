@@ -7,7 +7,14 @@ import { UsersModule } from 'src/users/users.module';
 
 
 @Module({
+  imports:[
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'supersecret',
+      signOptions: { expiresIn: '30m' },
+
+    })
+  ],
   controllers: [AuthController],
-  providers: [AuthService]
+  providers: [AuthService, PrismaService],
 })
 export class AuthModule {}
