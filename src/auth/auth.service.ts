@@ -4,26 +4,29 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 
 
-import { validateEmail, validateFields } from '../utils/validations.inputs';
-
+import { validateEmail, validateFields, validatePasswordLength} from '../utils/validations.inputs';
+import { normalizeInputs } from '../utils/normalize.inputs';
 @Injectable()
 export class AuthService {
     constructor(private prisma:PrismaService, private jwt: JwtService) {}// Constructor que sirve para inyectar el servicio PrismaService y JwtService
-
-    // registro de usuario
-    async register(data:{name: string, email:string, password:string}){
-        const requiredFields = ['name', 'email', 'password'];
-        /*
+    /*
         TODO Cosas por integrar
            1. Verificar campos requeridos, Que no vengan null ni vacios ✅
            2. Validar el formato del email ✅
-           3. validar longitud de la contraseña minimo de 8 caracteres maximo 24
-           4. Normalizar inputs para guardar en la base de datos
+           3. validar longitud de la contraseña minimo de 8 caracteres maximo 24 ✅
+           4. Normalizar inputs para guardar en la base de datos ✅
            5. seguir norma SOLID para esta funcion
         */
+    // registro de usuario
+    async register(data:{name: string, email:string, password:string}){
+        const requiredFields = ['name', 'email', 'password'];
+        data = normalizeInputs(data)
        //verificar el email
         const isValidEmail = validateEmail(data.email); // Llama a la funcion de validacion de email
-
+        const isValidPasswordLength = validatePasswordLength(data.password); // Llama a la funcion de validacion de longitud de contraseña
+        if(!isValidPasswordLength){ // Verifica si la contraseña cumple con los requisitos de longitud
+            throw new BadRequestException('La contraseña debe tener entre 8 y 24 caracteres');
+        }
         if(!validateFields(data, requiredFields)){ // Verifica si los campos requeridos estan presentes y no estan vacios
             throw new BadRequestException('Campos requeridos faltantes'); // Si falta algun campo requerido, lanza una excepción
         }

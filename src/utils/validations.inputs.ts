@@ -1,15 +1,11 @@
 // aca vamos a hacer la validacion de los campos que vienen del body
 
-import { max } from "rxjs";
-
-
-
 export function validateEmail(email:string): boolean { // Funcion para validar el formato del email, que tenga ej. martin@dominio.com
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
 
-
+// TODO  hacer una validacion donde sea un string al input y no un numero o un booleano
 export function validateFields(data: Record<string, any>, requiredFields: string[]): boolean {
     for (const field of requiredFields) {
         if (!data[field] || data[field].trim() === '') {
