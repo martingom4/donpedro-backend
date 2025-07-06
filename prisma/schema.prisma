@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
- 
+
 }
 
 datasource db {
@@ -20,6 +20,11 @@ model User {
   name          String?
   email         String?         @unique
   password      String?
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  lastLogin     DateTime?
+
   orders        Order[]
   refreshTokens RefreshToken[]
 }
@@ -54,10 +59,10 @@ model OrderProduct {
 model RefreshToken {
   id         Int      @id @default(autoincrement())
   userId     Int
-  token      String
-  createdAt  DateTime? @map("created_at")
-  expiresAt  DateTime? @map("expires_at")
-  revoked    Boolean   @default(false)
+  token      String   @unique
+  createdAt  DateTime @default(now()) @map("created_at")
+  expiresAt  DateTime @map("expires_at")
+  revoked    Boolean  @default(false)
 
   user       User     @relation(fields: [userId], references: [id])
 }

@@ -1,8 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 
+
+import { validateEmail, validateFields } from '../utils/validations.inputs';
 
 @Injectable()
 export class AuthService {
@@ -10,14 +12,25 @@ export class AuthService {
 
     // registro de usuario
     async register(data:{name: string, email:string, password:string}){
-
+        const requiredFields = ['name', 'email', 'password'];
         /*
         TODO Cosas por integrar
-           1. Verificar campos requeridos, Que no vengan null ni vacios
-           2. Validar el formato del email
-           3. validar longitud de la contraseña minimo de 8 caracteres maximo 64
+           1. Verificar campos requeridos, Que no vengan null ni vacios ✅
+           2. Validar el formato del email ✅
+           3. validar longitud de la contraseña minimo de 8 caracteres maximo 24
            4. Normalizar inputs para guardar en la base de datos
+           5. seguir norma SOLID para esta funcion
         */
+       //verificar el email
+        const isValidEmail = validateEmail(data.email); // Llama a la funcion de validacion de email
+
+        if(!validateFields(data, requiredFields)){ // Verifica si los campos requeridos estan presentes y no estan vacios
+            throw new BadRequestException('Campos requeridos faltantes'); // Si falta algun campo requerido, lanza una excepción
+        }
+        if(!isValidEmail){
+            throw new BadRequestException('Email invalido');
+        }
+
         const userExists = await this.prisma.user.findUnique({
             where:{ email: data.email }, // Verifica si el usuario ya existe
         });
