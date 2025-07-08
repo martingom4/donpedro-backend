@@ -7,17 +7,14 @@ import * as bcrypt from 'bcryptjs';
 import { validateEmail, validateFields, validatePasswordLength} from '../utils/validations.inputs';
 import { normalizeInputs } from '../utils/normalize.inputs';
 @Injectable()
+// funcion encargada de manejar la logica de autenticacion
+/*
+se encarga de resitro, login, manejo de tokens
+*/
 export class AuthService {
     constructor(private prisma:PrismaService, private jwt: JwtService) {}// Constructor que sirve para inyectar el servicio PrismaService y JwtService
-    /*
-        TODO Cosas por integrar
-           1. Verificar campos requeridos, Que no vengan null ni vacios ✅
-           2. Validar el formato del email ✅
-           3. validar longitud de la contraseña minimo de 8 caracteres maximo 24 ✅
-           4. Normalizar inputs para guardar en la base de datos ✅
-           5. seguir norma SOLID para esta funcion
-        */
-    // registro de usuario
+   
+    // registro de de tokens
     async register(data:{name: string, email:string, password:string}){
         const requiredFields = ['name', 'email', 'password'];
         data = normalizeInputs(data)
