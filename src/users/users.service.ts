@@ -1,52 +1,46 @@
 import { Injectable,UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcryptjs';
 
 
 // importacion de los datos necesarios
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
+import { validateInputs } from '../utils/validations.inputs';
+import { normalizeInputs } from '../utils/normalize.inputs';
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService){} // esto lo que hace es inyectar el servicio de prisma para poder usarlo en los metodos de este servicio
   async create(createUserDto: CreateUserDto) { // async porque tiene que esparar a que se complete las opperaciones en la base de datos y en el authService
-    /*	1.	Recibir un DTO válido
-            •	createUserDto: CreateUserDto como parámetro.
-        2.	Validar existencia de email
-            •	Consultar si ya existe un usuario con ese email en la base de datos.
-            •	Si existe, lanzar un error (ConflictException o Error).
-        3.	Crear el usuario en la base de datos
-            •	Usar prisma.user.create con los datos del DTO.
-            •	Aquí NO se encripta password (ya debe venir encriptado desde AuthService).
-        4.	Retornar el usuario creado
-            •	Sin el password por seguridad (usa select para omitirlo).
-        5.Manejo de errores
-            •	try/catch si quieres capturar y lanzar errores personalizados.
-  */
+    const normalizedData = normalizeInputs(createUserDto); // normalizamos los datos de entrada es decir ANILYS quitamos los espacios en blanco y convertimos a minusculas para normalizar los datos de entrada
+    // tenemos que hacer validacion de inputs
+    const requieredFields = ['name', 'email', 'password'];
+    if (!validateInputs(normalizedData, requieredFields)) { // si los datos no son validos, lanza una excepcion esto se trae desde utils/validations.inputs.ts
+      throw new BadRequestException('Invalid input data');
+    }
+
     const userExists = await this.prisma.user.findUnique({
-      where:{
-        email: createUserDto.email
-      }
+      where:{email: normalizedData.email}
     })
     if (userExists){
       throw new BadRequestException('Email already exists');
     }
+    const hash = await bcrypt.hash(normalizedData.password, 10); // encriptamos la password con bcrypt, el 10 es el numero de saltos que se le da a la password
+
     const user = await this.prisma.user.create({
       data: {
-        name: createUserDto.name,
-        email: createUserDto.email,
-        password: createUserDto.password
+        name: normalizedData.name,
+        email: normalizedData.email,
+        passwordHash: hash,
+        role: {connect: {code: 'CLIENT'}}
       },
       select: {
         id: true,
         name: true,
         email: true,
-        createdAt: true,
       },
     })
-    return user 
-
-    return 'This action adds a new user';
+    return user
   }
 
   findAll() {
