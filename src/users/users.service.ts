@@ -11,6 +11,7 @@ import { normalizeInputs } from '../utils/normalize.inputs';
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService){} // esto lo que hace es inyectar el servicio de prisma para poder usarlo en los metodos de este servicio
+
   async create(createUserDto: CreateUserDto) { // async porque tiene que esparar a que se complete las opperaciones en la base de datos y en el authService
     const normalizedData = normalizeInputs(createUserDto); // normalizamos los datos de entrada es decir ANILYS quitamos los espacios en blanco y convertimos a minusculas para normalizar los datos de entrada
     // tenemos que hacer validacion de inputs
@@ -18,15 +19,12 @@ export class UsersService {
     if (!validateInputs(normalizedData, requieredFields)) { // si los datos no son validos, lanza una excepcion esto se trae desde utils/validations.inputs.ts
       throw new BadRequestException('Invalid input data');
     }
-
     const userExists = await this.prisma.user.findUnique({
       where:{email: normalizedData.email}
     })
-    if (userExists){
-      throw new BadRequestException('Email already exists');
-    }
-    const hash = await bcrypt.hash(normalizedData.password, 10); // encriptamos la password con bcrypt, el 10 es el numero de saltos que se le da a la password
 
+    if (userExists){throw new BadRequestException('Email already exists');}
+    const hash = await bcrypt.hash(normalizedData.password, 10); // encriptamos la password con bcrypt, el 10 es el numero de saltos que se le da a la password
     const user = await this.prisma.user.create({
       data: {
         name: normalizedData.name,
@@ -43,8 +41,10 @@ export class UsersService {
     return user
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll() {
+    return this.prisma.user.findMany({
+      select:{id: true, name:true,email:true, role:{select:{name:true}}}
+    });
   }
 
   findOne(id: number) {

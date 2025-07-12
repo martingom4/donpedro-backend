@@ -10,10 +10,16 @@ import { normalizeInputs } from '../utils/normalize.inputs';
 @Injectable()
 // funcion encargada de manejar la logica de autenticacion
 // se encarga de resitro, login, manejo de tokens
-
 export class AuthService {
-    constructor(private prisma:PrismaService, private jwt: JwtService, private usersService: UsersService) {}// Constructor que sirve para inyectar el servicio PrismaService y JwtService
-    // funciona encargada del registro de usuarios
+    constructor(private users: UsersService, private jwt: JwtService) {}
+
+    private sing (user:{id:string; email:string; role:{code:string}}){ // 
+        const payload = {sub: user.id, role: user.role.code}
+        return {
+            accessToken: this.jwt.sign(payload, {expiresIn: '20m'}),
+            refreshToken: this.jwt.sign(payload, {expiresIn: '30d'})
+        }
+    }
 
     async authRegisterUser(data:{name:string, email:string, password:string}){
         // tengo que hacer la encriptacion de la password
@@ -22,7 +28,7 @@ export class AuthService {
         // retorna access token y refresh token para autenticacion automatica a la aplicacion
         const requiredFields = ['name', 'email', 'password']; // campos requeridos para el registro
         const normalizedData = normalizeInputs(data) // normalizamos los datos de entrada es decir ANILYS quitamos los espacios en blanco y convertimos a minusculas para normalizar los datos de entrada
-        if (!validateInputs(normalizedData, requiredFields)) { // si los datos no son validos, lanza una excepcion esto se trae desde utils/validations.inputs.ts 
+        if (!validateInputs(normalizedData, requiredFields)) { // si los datos no son validos, lanza una excepcion esto se trae desde utils/validations.inputs.ts
             throw new BadRequestException('Invalid input data');
         }
 
