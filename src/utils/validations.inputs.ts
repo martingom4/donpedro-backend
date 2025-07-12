@@ -8,11 +8,14 @@ export function validateEmail(email:string): boolean { // Funcion para validar e
 // TODO  hacer una validacion donde sea un string al input y no un numero o un booleano
 export function validateFields(data: Record<string, any>, requiredFields: string[]): boolean {
     for (const field of requiredFields) {
-        if (!data[field] || data[field].trim() === '') {
-            return false; // Si algún campo requerido está vacío o no existe, retorna false
+        const value = data[field];
+
+        // Verifica que exista y sea un string no vacío
+        if (typeof value !== 'string' || value.trim() === '') {
+            return false;
         }
     }
-    return true; // Si todos los campos requeridos están presentes y no están vacíos, retorna true
+    return true;
 }
 
 
@@ -21,4 +24,10 @@ export function  validatePasswordLength(password: string): boolean{
     const maxLength = 24
     return password.length >= minLength && password.length <= maxLength // si el largo de la password es mayor a 8 y menos a 24, retorna true si no retorna false
 
+}
+
+export function validateInputs(data: Record<string, any>, requiredFields: string[]): boolean {
+    return validateFields(data, requiredFields) &&
+           validateEmail(data.email) &&
+           validatePasswordLength(data.password);// todo esto tiene que ser true para que se considere que los inputs son validos 
 }
