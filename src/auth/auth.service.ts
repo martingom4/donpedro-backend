@@ -10,10 +10,21 @@ export class AuthService {
     private readonly users: UsersService,
     private readonly token: TokenService
   ){}
-  async register(dto: CreateAuthDto) {
+  async register(dto: CreateAuthDto, ip? : string) {
     const user = await this.users.create(dto);
     const payload = {sub: user.id, role: 'CLIENT'}
     const tokens  = this.token.signPair(payload)
+
+    const decoded = this.token.verify(tokens.refreshToken); // para obtener el `exp`
+    const expiresAt = new Date(decoded.exp * 1000);
+
+    await this.users.saveUserToken({
+      userId: user.id,
+      tokenHash: tokens.refreshToken,
+      createdByIp: ip,
+      expiresAt,
+    });
+
     return { user, tokens };
   }
 }

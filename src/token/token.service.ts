@@ -6,6 +6,10 @@ interface JWTPayload {
   role: string;
 }
 
+interface JWTPayloadExp extends JWTPayload {
+  exp: number;
+}
+
 @Injectable()
 export class TokenService {
   constructor(private readonly jwt: JwtService) {}
@@ -34,7 +38,7 @@ export class TokenService {
       refreshToken: this.signRefreshToken({ sub: user.sub }),
     };
   }
-  verify<T extends object = JWTPayload>(token: string): T {
+  verify<T extends object = JWTPayloadExp>(token: string): T {
     return this.jwt.verify<T>(token);
   }
 }

@@ -5,9 +5,11 @@ import * as bcrypt from 'bcryptjs';
 
 // importacion de los datos necesarios
 import { CreateUserDto } from './dto/create-user.dto';
+import { SaveUserTokenDto } from './dto/save-user-token.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { validateInputs } from '../utils/validations.inputs';
 import { normalizeInputs } from '../utils/normalize.inputs';
+
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService){} // esto lo que hace es inyectar el servicio de prisma para poder usarlo en los metodos de este servicio
@@ -39,7 +41,17 @@ export class UsersService {
     })
     return user
   }
-
+  async saveUserToken(saveUserTokenDto: SaveUserTokenDto) {
+    const hash = await bcrypt.hash(saveUserTokenDto.tokenHash, 12) // encriptamos el token con bcrypt
+    await this.prisma.userRefreshToken.create({
+      data:{
+        userId: saveUserTokenDto.userId,
+        tokenHash: hash,
+        expiresAt: saveUserTokenDto.expiresAt,
+        createdByIp: saveUserTokenDto.createdByIp,
+      }
+    })
+  }
   async findAll() {
     return this.prisma.user.findMany({
       select:{id: true, name:true,email:true, role:{select:{name:true}}}
