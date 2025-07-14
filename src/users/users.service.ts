@@ -11,7 +11,6 @@ import { normalizeInputs } from '../utils/normalize.inputs';
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService){} // esto lo que hace es inyectar el servicio de prisma para poder usarlo en los metodos de este servicio
-
   async create(createUserDto: CreateUserDto) { // async porque tiene que esparar a que se complete las opperaciones en la base de datos y en el authService
     const normalizedData = normalizeInputs(createUserDto); // normalizamos los datos de entrada es decir ANILYS quitamos los espacios en blanco y convertimos a minusculas para normalizar los datos de entrada
     // tenemos que hacer validacion de inputs

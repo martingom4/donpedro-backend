@@ -1,12 +1,16 @@
-import { Controller, Post , Body} from '@nestjs/common';
-import { AuthService } from './auth.service'; // este es el servicio de autenticacion
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { CreateAuthDto } from './dto/create-auth.dto';
+import { UpdateAuthDto } from './dto/update-auth.dto';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService){}// Inicializa el controlador de autenticacion con el servicio de autenticacion
-    @Post('register')
-    register(@Body() body:{name: string; email: string; password: string}){
-        return this.authService.authRegisterUser(body); // Llama al servicio de autenticacion para registrar un nuevo usuario
-    }
-}
+  constructor(private readonly authService: AuthService) {}
 
+  @Post('register')
+  create(@Body() createAuthDto: CreateAuthDto) {
+    return this.authService.register(createAuthDto);
+  }
+
+
+}
