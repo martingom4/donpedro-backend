@@ -9,7 +9,8 @@ import { SaveUserTokenDto } from './dto/save-user-token.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { validateInputs } from '../utils/validations.inputs';
 import { normalizeInputs } from '../utils/normalize.inputs';
-import { LoginUser } from 'src/auth/dto/login-auth.dto';
+import { LoginAuthDto } from 'src/auth/dto/login-auth.dto';
+import { get } from 'http';
 
 const requieredFields = ['name', 'email', 'password']
 @Injectable()
@@ -43,29 +44,28 @@ export class UsersService {
     })
     return user
   }
-  async userLogin(loginUserDto:LoginUser){
+  async userLogin(loginUserDto:LoginAuthDto){
     const normalizedData = normalizeInputs(loginUserDto)
-    const fields = requieredFields.slice(0,2)// solo correo y contrase;a
+    const fields = requieredFields.slice(1,2)// solo correo y contraseña
     if(!validateInputs(normalizedData, fields)){
+      console.log(fields)
       throw new BadRequestException('Invalid input data');
     }
-    
+    const user = await this.getEmail(normalizedData.email)
+    if(!user){
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const isMatch = await bcrypt.compare(normalizedData.password, user.passwordHash) // comparamos la contraseña ingresada con la contraseña encriptada en la base de datos
+    if(!isMatch){
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
+    return user
   }
-
-
-
-
-
-
-
-
-
-
 
   async saveUserToken(saveUserTokenDto: SaveUserTokenDto) {
     const hash = await bcrypt.hash(saveUserTokenDto.tokenHash, 12) // encriptamos el token con bcrypt
-    await this.prisma.userRefreshToken.create({
+    return await this.prisma.userRefreshToken.create({
       data:{
         userId: saveUserTokenDto.userId,
         tokenHash: hash,
@@ -74,6 +74,40 @@ export class UsersService {
       }
     })
   }
+
+  async getEmail(email:string){
+    return this.prisma.user.findUnique({
+      where: { email },
+      select: {
+        id:true,
+        email: true,
+        passwordHash: true,
+      }
+    })
+  }
+
+  async findLastToken(userId:string){
+    return this.prisma.userRefreshToken.findFirst({ // find first porque solo queremos el ultimo token
+        where:{
+          userId,
+          revokedAt: null, // solo queremos los tokens que no han sido revocados
+        },
+        orderBy:{id: 'desc'},
+    })
+  }
+  async revokeToken(tokenId: number){
+    return this.prisma.userRefreshToken.update({
+      where:{id: tokenId},
+      data:{revokedAt: new Date()}
+    })
+  }
+  async markReplacedToken(oldId: number, newId: number){
+    return this.prisma.userRefreshToken.update({
+      where:{id: oldId},
+      data:{replacedById: newId}
+    })
+  }
+
 
 
   findOne(id: number) {

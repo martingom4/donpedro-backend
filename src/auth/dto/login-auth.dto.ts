@@ -1,4 +1,4 @@
-export class LoginUser{
+export class LoginAuthDto {
     email: string
-    PasswordHash: string
+    password: string
 }

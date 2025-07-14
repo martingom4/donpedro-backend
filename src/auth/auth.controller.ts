@@ -2,7 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Req} from '@nestjs/c
 import {Request } from 'express'
 import { AuthService } from './auth.service'
 import { CreateAuthDto } from './dto/create-auth.dto'
+import { UserLogin } from 'src/users/dto/login-user.dto'
+
 import { UpdateAuthDto } from './dto/update-auth.dto'
+
 
 @Controller('auth')
 export class AuthController {
@@ -12,6 +15,9 @@ export class AuthController {
   register(@Body() createAuthDto: CreateAuthDto, @Req() req: Request) {
     return this.authService.register(createAuthDto, req.ip);
   }
-
+  @Post('login')
+  login(@Body() loginUserDto: UserLogin, @Req() req: Request) {
+    return this.authService.login(loginUserDto, req.ip);
+  }
 
 }

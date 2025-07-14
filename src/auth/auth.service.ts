@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { LoginUser } from './dto/login-auth.dto';
+import { LoginAuthDto } from './dto/login-auth.dto';
 
 import { UsersService } from '../users/users.service';
 import { TokenService } from '../token/token.service';
@@ -18,7 +18,7 @@ export class AuthService {
     const payload = {sub: user.id, role: 'CLIENT'}
     const tokens  = this.token.signPair(payload)
 
-    const decoded = this.token.verify(tokens.refreshToken); // para obtener el `exp`
+    const decoded = this.token.verify(tokens.refreshToken); // para obtener el `exp` que es el tiempo de expiracion del token
     const expiresAt = new Date(decoded.exp * 1000);
 
     await this.users.saveUserToken({
@@ -30,7 +30,32 @@ export class AuthService {
 
     return { user, tokens };
   }
-  async login (dto: LoginUser){ // la autenticacion de el usuario 
-    return
+  async login (dto: LoginAuthDto, ip?: string){
+     // la autenticacion de el usuario
+    const user = await this.users.userLogin(dto)
+    const payload = {sub: user.id, role: 'CLIENT'}
+    const tokens = this.token.signPair(payload)
+
+    const decoded = this.token.verify<{ exp: number }>(tokens.refreshToken); // para obtener el `exp` que es el tiempo de expiracion del token
+    const expiresAt = new Date(decoded.exp * 1000)
+
+    const lastToken = await this.users.findLastToken(user.id)
+
+    const newToken = await this.users.saveUserToken({
+    userId: user.id,
+    tokenHash: tokens.refreshToken,
+    createdByIp: ip,
+    expiresAt,
+   });
+
+   if (lastToken) {
+    await this.users.revokeToken(lastToken.id);
+    await this.users.markReplacedToken(lastToken.id, newToken.id);
+  }
+
+    return {
+    user: { id: user.id, email: user.email },
+    tokens,
+    }
   }
 }
