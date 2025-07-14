@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+
+
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { LoginUser } from './dto/login-auth.dto';
+
 import { UsersService } from '../users/users.service';
 import { TokenService } from '../token/token.service';
 
@@ -26,5 +29,8 @@ export class AuthService {
     });
 
     return { user, tokens };
+  }
+  async login (dto: LoginUser){ // la autenticacion de el usuario 
+    return
   }
 }
