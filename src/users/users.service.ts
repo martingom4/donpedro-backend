@@ -88,7 +88,6 @@ export class UsersService {
   }
 
 
-
   async findLastToken(userId:string){
     return this.prisma.userRefreshToken.findFirst({ // find first porque solo queremos el ultimo token
         where:{
