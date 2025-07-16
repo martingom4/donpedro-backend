@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Request } from 'express';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
+import { LogoutAuthDto } from './dto/logout-auth.dto';
 
 import { UsersService } from '../users/users.service';
 import { TokenService } from '../token/token.service';
+
 
 @Injectable()
 export class AuthService {
@@ -30,6 +33,7 @@ export class AuthService {
 
     return { user, tokens };
   }
+
   async login (dto: LoginAuthDto, ip?: string){
      // la autenticacion de el usuario
     const user = await this.users.userLogin(dto)
@@ -58,4 +62,24 @@ export class AuthService {
     tokens,
     }
   }
+
+
+
+  async logout(dto: LogoutAuthDto){
+    const { refreshToken } = dto;
+    if(!refreshToken)throw new UnauthorizedException('Refresh token is required');
+
+    const payload = this.token.verify<{ sub: string }>(refreshToken);
+
+    const lastToken = await this.users.findLastToken(payload.sub)
+    if(!lastToken) throw new UnauthorizedException('Invalid refresh token');
+
+    const match = await this.token.compare(refreshToken, lastToken.tokenHash);
+    if(!match) throw new UnauthorizedException('Invalid refresh token');
+
+    await this.users.revokeToken(lastToken.id);
+    return { message: 'Logout successful' };
+
+  }
+
 }

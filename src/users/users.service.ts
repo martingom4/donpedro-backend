@@ -10,7 +10,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { validateInputs } from '../utils/validations.inputs';
 import { normalizeInputs } from '../utils/normalize.inputs';
 import { LoginAuthDto } from 'src/auth/dto/login-auth.dto';
-import { get } from 'http';
 
 const requieredFields = ['name', 'email', 'password']
 @Injectable()
@@ -86,6 +85,8 @@ export class UsersService {
     })
   }
 
+  
+
   async findLastToken(userId:string){
     return this.prisma.userRefreshToken.findFirst({ // find first porque solo queremos el ultimo token
         where:{
@@ -107,6 +108,12 @@ export class UsersService {
       data:{replacedById: newId}
     })
   }
+
+
+
+
+
+
 
 
 

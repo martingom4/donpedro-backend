@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import * as bcrypt from 'bcryptjs';
 
 interface JWTPayload {
   sub: string;
@@ -40,5 +41,9 @@ export class TokenService {
   }
   verify<T extends object = JWTPayloadExp>(token: string): T {
     return this.jwt.verify<T>(token);
+  }
+  
+  async compare(token: string, hash: string): Promise<boolean>{
+    return bcrypt.compare(token, hash);
   }
 }

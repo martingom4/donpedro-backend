@@ -18,6 +18,8 @@ export function validateFields(data: Record<string, any>, requiredFields: string
     return true;
 }
 
+// TODOOOOOOO: cuando se vaya a hacer un registro la contrase;a posiblemente sea numeros solamente, por lo que se tendria que validar que sea un string o un numero
+
 
 export function  validatePasswordLength(password: string): boolean{
     const minLength = 8
@@ -29,5 +31,5 @@ export function  validatePasswordLength(password: string): boolean{
 export function validateInputs(data: Record<string, any>, requiredFields: string[]): boolean {
     return validateFields(data, requiredFields) &&
            validateEmail(data.email) &&
-           validatePasswordLength(data.password);// todo esto tiene que ser true para que se considere que los inputs son validos 
+           validatePasswordLength(data.password);// todo esto tiene que ser true para que se considere que los inputs son validos
 }
