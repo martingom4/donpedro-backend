@@ -53,6 +53,7 @@ export class UsersService {
       throw new BadRequestException('Invalid input data');
     }
     const user = await this.getEmail(normalizedData.email)
+
     if(!user){
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -82,6 +83,7 @@ export class UsersService {
       select: {
         id:true,
         email: true,
+        name: true,
         passwordHash: true,
       }
     })
