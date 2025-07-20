@@ -6,6 +6,7 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { LogoutAuthDto } from './dto/logout-auth.dto';
 
+
 import { UsersService } from '../users/users.service';
 import { TokenService } from '../token/token.service';
 
@@ -62,7 +63,6 @@ export class AuthService {
       tokens,
     }
   }
-
 
 
   async logout(dto: LogoutAuthDto){

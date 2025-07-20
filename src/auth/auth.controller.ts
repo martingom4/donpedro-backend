@@ -7,7 +7,6 @@ import { LoginAuthDto } from './dto/login-auth.dto'
 import { LogoutAuthDto } from './dto/logout-auth.dto'
 
 
-import { UpdateAuthDto } from './dto/update-auth.dto'
 
 
 //TODO me hace falta proteger las rutas de login y register con un guard de autenticacion, para que no se pueda acceder a ellas si ya se tiene un token valido

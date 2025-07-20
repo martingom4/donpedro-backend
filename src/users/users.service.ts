@@ -65,6 +65,23 @@ export class UsersService {
     return user
   }
 
+  async UpdateUser(dto: UpdateUserDto) {
+    const user = await this.getById(dto.userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: dto.userId },
+      data: {
+        ...(dto.name && { name: dto.name }),
+        ...(dto.email && { email: dto.email }),
+      },
+    });
+
+    return updatedUser;
+  }
+
   async saveUserToken(saveUserTokenDto: SaveUserTokenDto) {
     const hash = await bcrypt.hash(saveUserTokenDto.tokenHash, 12) // encriptamos el token con bcrypt
     return await this.prisma.userRefreshToken.create({
@@ -85,6 +102,17 @@ export class UsersService {
         email: true,
         name: true,
         passwordHash: true,
+      }
+    })
+  }
+
+  async getById(id: string){
+    return this.prisma.user.findFirst({
+      where: {id},
+      select:{
+        id: true,
+        email: true,
+        name:true
       }
     })
   }
