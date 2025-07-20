@@ -28,6 +28,7 @@ async function main() {
     skipDuplicates: true,
   });
 
+
   // Obtener ids de las categorías
   const allCategories = await prisma.category.findMany();
   const hamburguesasId = allCategories.find(c => c.name === 'Hamburguesas')?.id!;
@@ -42,7 +43,7 @@ async function main() {
         name: 'Clásica',
         description: 'Pan artesanal, carne 1/4 lb, bacon, vegetales frescos, mozzarella y salsa de la casa',
         price: 6,
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/89/HD_transparent_picture.png',
+        imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=999&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         stock: 10,
         isActive: true,
         categoryId: hamburguesasId,
@@ -121,9 +122,46 @@ async function main() {
         isActive: true,
         categoryId: salchipapasId,
       },
+
+
     ],
     skipDuplicates: true,
   });
+
+  /* ──────────────── PROMOCIONES ──────────────── */
+  const Mexicana = await prisma.product.findFirst({ where: { name: 'Mexicana' } });
+  const dobleSmash    = await prisma.product.findFirst({ where: { name: 'Doble Smash' } });
+
+  // 1) Promoción UTP: incluye papas + soda (sin descuento adicional)
+  if (Mexicana) {
+    await prisma.promotion.create({
+      data: {
+        title: 'Combo 20% Mexicana',
+        discountPct: 20,               // el precio ya incluye la promo
+        startDate: new Date(),
+        endDate: null,
+        products: {
+          create: { productId: Mexicana.id },
+        },
+      },
+    });
+  }
+
+  // 2) Promo inventada: 15 % de descuento al Doble Smash
+  if (dobleSmash) {
+    await prisma.promotion.create({
+      data: {
+        title: 'Combo 15 % Doble Smash',
+        discountPct: 15,
+        startDate: new Date(),
+        endDate: null,
+        products: {
+          create: { productId: dobleSmash.id },
+        },
+      },
+    });
+  }
+  /* ───────────────────────────────────────────── */
 }
 
 main()

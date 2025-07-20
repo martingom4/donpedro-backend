@@ -7,13 +7,14 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
 import { TokenModule } from './token/token.module';
+import { PromotionsModule } from './promotions/promotions.module';
 
 
 
 
 
 @Module({
-  imports: [AuthModule, ProductsModule, OrdersModule, PrismaModule, UsersModule, TokenModule],
+  imports: [AuthModule, ProductsModule, OrdersModule, PrismaModule, UsersModule, TokenModule, PromotionsModule],
   controllers: [],
   providers: [PrismaService],
 })
